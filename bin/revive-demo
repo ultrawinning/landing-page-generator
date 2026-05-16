@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Resume generation on the live demo.
+# Removes DEMO_PAUSED from Vercel production env and redeploys.
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+echo "Removing DEMO_PAUSED from production…"
+npx vercel@latest env rm DEMO_PAUSED production --yes 2>&1 | tail -3 || echo "  (wasn't set — fine)"
+
+echo ""
+echo "Redeploying…"
+npx vercel@latest --prod --yes 2>&1 | tail -5
+
+echo ""
+echo "✓ Demo live again."

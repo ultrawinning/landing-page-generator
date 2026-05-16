@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Pause generation on the live demo without taking the site down.
+# Sets DEMO_PAUSED=1 in Vercel production env and redeploys.
+# Frontend keeps working; /api/generate returns 503.
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+echo "Setting DEMO_PAUSED=1 in production…"
+echo "1" | npx vercel@latest env add DEMO_PAUSED production --yes 2>&1 | tail -5 || {
+  echo ""
+  echo "Env var may already exist. Removing + re-adding…"
+  npx vercel@latest env rm DEMO_PAUSED production --yes 2>&1 | tail -3 || true
+  echo "1" | npx vercel@latest env add DEMO_PAUSED production --yes
+}
+
+echo ""
+echo "Redeploying…"
+npx vercel@latest --prod --yes 2>&1 | tail -5
+
+echo ""
+echo "✓ Demo paused. Frontend still serves; /api/generate now returns 503."
+echo "  Resume with: bin/revive-demo"

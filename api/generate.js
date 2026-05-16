@@ -8,6 +8,10 @@ export default async function handler(req) {
     return new Response("POST only", { status: 405 });
   }
 
+  if (process.env.DEMO_PAUSED) {
+    return new Response("Demo is paused. Try again later.", { status: 503 });
+  }
+
   let body;
   try {
     body = await req.json();

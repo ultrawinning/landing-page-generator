@@ -35,4 +35,11 @@ Frontend + function at http://localhost:3000. Reads `ANTHROPIC_API_KEY` from `.e
 - `lib/styles.js` — single source of truth for the 9 style descriptors
 - `lib/prompts.js` — prompt builders
 - `vercel.json` — Vercel config
+- `bin/kill-demo`, `bin/revive-demo` — pause/resume generation without taking the site down
 - `mini-pathfinder/` — per-project knowledge catalog
+
+## Limits
+
+**Per-user (client-side):** 5 generations per visitor, tracked in `localStorage`. Bypassable by clearing site data — fine for a friends demo, swap to Vercel KV server-side limit if it goes wider.
+
+**Killswitch:** when generation needs to stop without taking the site down, run `bin/kill-demo`. It sets `DEMO_PAUSED=1` in Vercel production and redeploys; the frontend keeps loading but `/api/generate` returns 503. Resume with `bin/revive-demo`.
