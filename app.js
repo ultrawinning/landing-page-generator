@@ -106,14 +106,25 @@ generateBtn.addEventListener("click", async () => {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+    let lastRender = 0;
+    const RENDER_INTERVAL_MS = 750;
+    let chars = 0;
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      preview.srcdoc = buffer;
+      chars = buffer.length;
+      const now = Date.now();
+      if (now - lastRender > RENDER_INTERVAL_MS) {
+        preview.srcdoc = buffer;
+        lastRender = now;
+      }
+      status.textContent = `${state.vibe} · ${state.layout} · ${state.personality} — ${chars.toLocaleString()} chars…`;
     }
 
+    // Final render after stream completes
+    preview.srcdoc = buffer;
     lastHtml = buffer;
     status.textContent = `done · ${state.vibe} · ${state.layout} · ${state.personality} · ${remaining()} left`;
     downloadBtn.disabled = false;
