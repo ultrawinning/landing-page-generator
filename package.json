@@ -1,0 +1,7 @@
+{
+  "name": "landing-page-generator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Public demo: type a business brief, pick a style, get a generated landing page."
+}

@@ -1,5 +1,5 @@
-// EDIT THIS after `wrangler deploy` prints your Worker URL:
-const WORKER_URL = "https://landing-page-generator-worker.YOUR-SUBDOMAIN.workers.dev";
+// Vercel Edge function — co-hosted with the frontend, so relative URL works.
+const API_URL = "/api/generate";
 
 const state = {
   vibe: "dark-tech",
@@ -68,7 +68,7 @@ generateBtn.addEventListener("click", async () => {
   lastHtml = "";
 
   try {
-    const res = await fetch(`${WORKER_URL}/generate`, {
+    const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ brief, ...state }),
@@ -76,7 +76,7 @@ generateBtn.addEventListener("click", async () => {
 
     if (!res.ok) {
       const err = await res.text();
-      throw new Error(`Worker ${res.status}: ${err}`);
+      throw new Error(`API ${res.status}: ${err}`);
     }
     if (!res.body) throw new Error("No response body");
 
