@@ -62,8 +62,58 @@ const status = document.getElementById("status");
 const preview = document.getElementById("preview");
 const downloadBtn = document.getElementById("download-btn");
 const openBtn = document.getElementById("open-btn");
+const cog = document.getElementById("cog");
+const elapsed = document.getElementById("elapsed");
 
 let lastHtml = "";
+
+const PROGRESS_MESSAGES = [
+  "Choosing the palette…",
+  "Sketching the layout…",
+  "Writing headlines…",
+  "Picking image seeds…",
+  "Composing sections…",
+  "Polishing copy…",
+  "Tuning the spacing…",
+  "Finalizing details…",
+];
+
+let progressTimer = null;
+let messageTimer = null;
+let startedAt = 0;
+let msgIndex = 0;
+
+function fmtElapsed(ms) {
+  const total = Math.floor(ms / 1000);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function startProgressUi() {
+  startedAt = Date.now();
+  msgIndex = 0;
+  cog.classList.remove("hidden");
+  elapsed.classList.remove("hidden");
+  elapsed.textContent = "0:00";
+  status.textContent = PROGRESS_MESSAGES[0];
+  progressTimer = setInterval(() => {
+    elapsed.textContent = fmtElapsed(Date.now() - startedAt);
+  }, 250);
+  messageTimer = setInterval(() => {
+    msgIndex = (msgIndex + 1) % PROGRESS_MESSAGES.length;
+    status.textContent = PROGRESS_MESSAGES[msgIndex];
+  }, 3200);
+}
+
+function stopProgressUi() {
+  clearInterval(progressTimer);
+  clearInterval(messageTimer);
+  progressTimer = null;
+  messageTimer = null;
+  cog.classList.add("hidden");
+  elapsed.classList.add("hidden");
+}
 
 generateBtn.addEventListener("click", async () => {
   const brief = briefInput.value.trim();
@@ -82,11 +132,11 @@ generateBtn.addEventListener("click", async () => {
   generateBtn.disabled = true;
   generateBtn.textContent = "Generating…";
   output.classList.remove("hidden");
-  status.textContent = `${state.vibe} · ${state.layout} · ${state.personality} — generating…`;
-  preview.srcdoc = "<body style='font-family:sans-serif;padding:40px;color:#888'>thinking…</body>";
+  preview.srcdoc = "<body style='font-family:sans-serif;padding:40px;color:#aaa;text-align:center'><div style='margin-top:80px;font-size:14px'>thinking…</div></body>";
   downloadBtn.disabled = true;
   openBtn.disabled = true;
   lastHtml = "";
+  startProgressUi();
 
   try {
     const res = await fetch(API_URL, {
@@ -108,29 +158,29 @@ generateBtn.addEventListener("click", async () => {
     let buffer = "";
     let lastRender = 0;
     const RENDER_INTERVAL_MS = 750;
-    let chars = 0;
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      chars = buffer.length;
       const now = Date.now();
       if (now - lastRender > RENDER_INTERVAL_MS) {
         preview.srcdoc = buffer;
         lastRender = now;
       }
-      status.textContent = `${state.vibe} · ${state.layout} · ${state.personality} — ${chars.toLocaleString()} chars…`;
     }
 
     // Final render after stream completes
     preview.srcdoc = buffer;
     lastHtml = buffer;
-    status.textContent = `done · ${state.vibe} · ${state.layout} · ${state.personality} · ${remaining()} left`;
+    const took = fmtElapsed(Date.now() - startedAt);
+    stopProgressUi();
+    status.textContent = `done in ${took} · ${state.vibe} · ${state.layout} · ${state.personality} · ${remaining()} left`;
     downloadBtn.disabled = false;
     openBtn.disabled = false;
     updateRemainingHint();
   } catch (err) {
+    stopProgressUi();
     status.textContent = `error: ${err.message}`;
     preview.srcdoc = `<body style='font-family:sans-serif;padding:40px;color:#c33'><h2>Generation failed</h2><pre>${escapeHtml(err.message)}</pre></body>`;
   } finally {
