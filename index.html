@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Landing Page Generator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Landing Page Generator</h1>
+    <p class="tag">Type a brief. Pick a vibe. Get a landing page.</p>
+  </header>
+
+  <main>
+    <section class="brief">
+      <label for="brief-input">Tell me about the business</label>
+      <textarea id="brief-input" rows="4" placeholder="A modern co-working space for solo founders in Lisbon, with a rooftop garden, fast wifi, and a coffee bar run by an ex-Hearts barista."></textarea>
+    </section>
+
+    <section class="pickers">
+      <div class="picker-row" data-axis="vibe">
+        <span class="axis-label">Vibe</span>
+        <button class="picker" data-value="dark-tech">dark + tech</button>
+        <button class="picker" data-value="light-bright">light + bright</button>
+        <button class="picker" data-value="earthy-warm">earthy + warm</button>
+      </div>
+      <div class="picker-row" data-axis="layout">
+        <span class="axis-label">Layout</span>
+        <button class="picker" data-value="hero-first">hero-first</button>
+        <button class="picker" data-value="story-scroll">story scroll</button>
+        <button class="picker" data-value="feature-grid">feature grid</button>
+      </div>
+      <div class="picker-row" data-axis="personality">
+        <span class="axis-label">Personality</span>
+        <button class="picker" data-value="serious">serious</button>
+        <button class="picker" data-value="playful">playful</button>
+        <button class="picker" data-value="luxurious">luxurious</button>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button id="random-btn" type="button">&#127922; Random</button>
+      <button id="generate-btn" type="button">Generate &rarr;</button>
+    </section>
+
+    <section id="output" class="output hidden">
+      <div class="output-header">
+        <span id="status">Generating&hellip;</span>
+        <div class="output-actions">
+          <button id="download-btn" type="button" disabled>Download .html</button>
+          <button id="open-btn" type="button" disabled>Open in new tab</button>
+        </div>
+      </div>
+      <iframe id="preview" title="Generated landing page"></iframe>
+    </section>
+  </main>
+
+  <footer>
+    <small>powered by Claude &middot; images from picsum.photos</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

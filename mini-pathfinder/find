@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Mini-Pathfinder query helper. See pathfinder/README.md for full usage.
+
+set -euo pipefail
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MANIFEST="$DIR/manifest.json"
+
+[[ -f "$MANIFEST" ]] || { echo "manifest.json not found at $MANIFEST" >&2; exit 1; }
+command -v jq >/dev/null || { echo "jq required (brew install jq)" >&2; exit 1; }
+
+if [[ $# -eq 0 ]]; then
+  echo "Domains in this project:"
+  jq -r '.domains | to_entries[] | "  \(.key) — \(.value)"' "$MANIFEST"
+  echo ""
+  echo "Usage: ./pathfinder/find <domain> [keyword]   (use \"\" for any domain)"
+  exit 0
+fi
+
+if [[ "$1" == "--tags" ]]; then
+  jq -r '.assets[].tags[]' "$MANIFEST" | sort -u
+  exit 0
+fi
+
+DOMAIN="$1"
+KEYWORD="${2:-}"
+
+jq -r --arg domain "$DOMAIN" --arg kw "$KEYWORD" '
+  def matches_kw($kw):
+    ($kw == "") or
+    ((.id // "") | test($kw; "i")) or
+    ((.path // "") | test($kw; "i")) or
+    ((.summary // "") | test($kw; "i")) or
+    (((.tags // []) | join(",")) | test($kw; "i"));
+  .assets[]
+  | select($domain == "" or .domain == $domain)
+  | select(matches_kw($kw))
+  | "\(.path)\t\(.type)\t\(.summary)\t[\(.tags | join(", "))]"
+' "$MANIFEST" | column -t -s $'\t'
